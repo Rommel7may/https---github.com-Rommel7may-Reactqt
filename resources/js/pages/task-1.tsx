@@ -28,11 +28,8 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Task1({
-  Items,
-}: {
-  Items: Array<{ id: number; name: string }>;
-}) {
+export default function Task1({Items,}: {Items: Array<{ id: number; name: string }>;}) {
+ 
   const { data, setData, post, reset, errors } = useForm({
     name: '',
   });
