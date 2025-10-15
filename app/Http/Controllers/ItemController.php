@@ -35,7 +35,9 @@ class ItemController extends Controller
             'name' => 'required|string|max:255',
         ]);
         Item::create($validated);
+
         return redirect()->back()->with('success', 'Item created successfully.');
+        
     }
 
     /**
@@ -59,7 +61,12 @@ class ItemController extends Controller
      */
     public function update(Request $request, Item $item)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+        $item->update($validated);
+
+        return redirect()->back()->with('success', 'Item updated successfully.');
     }
 
     /**
