@@ -74,6 +74,8 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        //
+        $item->delete();
+
+        return redirect()->back()->with('success', 'item succesfully deleted',);
     }
 }

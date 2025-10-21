@@ -17,6 +17,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+// removed incorrect import which caused a name collision with local destroy
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -33,7 +34,8 @@ export default function Task1({
 }: {
     Items: Array<{ id: number; name: string }>;
 }) {
-    const { data, setData, post, reset, errors } = useForm({
+    // single form instance for create/update/delete
+    const { data, setData, post, put, delete: destroy, reset, errors } = useForm({
         name: '',
     });
 
@@ -41,14 +43,38 @@ export default function Task1({
 
     const [open, setOpen] = useState(false);
 
+    // When dialog opens for create, ensure form is cleared and editingId reset
+    const openCreate = () => {
+        reset();
+        setEditingId(null);
+        setOpen(true);
+    };
+
+    // Close dialog and clear editing state
+    const closeDialog = () => {
+        reset();
+        setEditingId(null);
+        setOpen(false);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/task1', {
-            onSuccess: () => {
-                reset();
-                setOpen(false);
-            },
-        });
+
+        if (editingId) {
+            // update existing
+            put(`/task1/${editingId}`, {
+                onSuccess: () => {
+                    closeDialog();
+                },
+            });
+        } else {
+            // create new
+            post('/task1', {
+                onSuccess: () => {
+                    closeDialog();
+                },
+            });
+        }
     };
 
     return (
@@ -59,7 +85,7 @@ export default function Task1({
             <div className="flex flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button>Add Item</Button>
+                        <Button onClick={openCreate}>Add Item</Button>
                     </DialogTrigger>
 
                     <DialogContent>
@@ -85,7 +111,7 @@ export default function Task1({
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    onClick={() => setOpen(false)}
+                                    onClick={closeDialog}
                                 >
                                     Cancel
                                 </Button>
@@ -124,7 +150,17 @@ export default function Task1({
                                         >
                                             Edit
                                         </Button>
-                                        <Button variant="destructive" size="sm">
+                                        <Button
+                                            onClick={() =>
+                                                destroy(`/task1/${item.id}`, {
+                                                    onSuccess: () => {
+                                                        /* no-op: Inertia will refresh the page or successor will update listing */
+                                                    },
+                                                })
+                                            }
+                                            variant="destructive"
+                                            size="sm"
+                                        >
                                             Delete
                                         </Button>
                                     </TableCell>
